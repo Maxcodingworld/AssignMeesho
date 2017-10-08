@@ -1,5 +1,6 @@
 package personslist.com.assignmeesho;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity{
     RecyclerView recyclerView = null;
     PullRequestAdaptor adaptor = null;
 
+    ProgressDialog dialog = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,16 +58,37 @@ public class MainActivity extends AppCompatActivity{
                         String userString = userName.getText().toString();
                         String repoString = repoName.getText().toString();
                         if(userString!=null && repoString!=null){
+                            try {
+                                if (dialog != null && dialog.isShowing()) {
+                                    dialog.dismiss();
+                                    dialog = null;
+                                }
+                            }catch(Exception e){
+                            }
+                            dialog = new ProgressDialog(context);
+                            dialog.setTitle("Fetching pull requests");
+                            dialog.setMessage("Please wait ...");
+                            dialog.setCancelable(false);
+                            dialog.show();
                             new APIAsyncTask(context, new FinishAPI() {
                                 @Override
                                 public void onFinish(String result) {
-                                    JSONArray array = null;
-                                    try {
-                                        array = new JSONArray(result);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
+                                    if(result!=null) {
+                                        JSONArray array = null;
+                                        try {
+                                            array = new JSONArray(result);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        parseJsonArray(array);
                                     }
-                                    parseJsonArray(array);
+                                    try {
+                                        if (dialog != null && dialog.isShowing()) {
+                                            dialog.dismiss();
+                                            dialog = null;
+                                        }
+                                    }catch(Exception e){
+                                    }
                                 }
                             },userString,repoString).execute();
                         }
@@ -228,7 +252,10 @@ public class MainActivity extends AppCompatActivity{
                     callback.onFinish(result);
                 }
             }else{
-                Toast.makeText(context,"File Not found",Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"File Not found",Toast.LENGTH_LONG).show();
+                if (callback != null) {
+                    callback.onFinish(null);
+                }
             }
         }
 
@@ -251,5 +278,17 @@ public class MainActivity extends AppCompatActivity{
 
     public interface FinishAPI{
         void onFinish(String result);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            if (dialog != null && dialog.isShowing()) {
+                dialog.dismiss();
+                dialog = null;
+            }
+        }catch(Exception e){
+        }
     }
 }
