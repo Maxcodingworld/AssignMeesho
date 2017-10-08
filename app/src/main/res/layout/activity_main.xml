@@ -1,11 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/activity_main"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <EditText
+        android:text="Maxcodingworld"
+        android:padding="10dp"
+        android:id="@+id/user_name"
+        android:hint="User name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
+    <EditText
+        android:text="AssignMeesho"
+        android:padding="10dp"
+        android:id="@+id/repo_name"
+        android:hint="Repo name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
+    <TextView
+        android:id="@+id/done"
+        android:textColor="@color/white"
+        android:background="@color/green"
+        android:padding="10dp"
+        android:gravity="center"
+        android:text="DONE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-</RelativeLayout>
+    <android.support.v7.widget.RecyclerView
+        android:padding="10dp"
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

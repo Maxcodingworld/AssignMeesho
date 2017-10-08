@@ -4,7 +4,14 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,8 +30,9 @@ import personslist.com.assignmeesho.pojo.PullRequestitem;
 public class MainActivity extends AppCompatActivity{
 
     Context context = null;
-
     ArrayList<PullRequestitem> items = new ArrayList<>();
+    RecyclerView recyclerView = null;
+    PullRequestAdaptor adaptor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,19 +41,46 @@ public class MainActivity extends AppCompatActivity{
 
         context = this;
 
-        new APIAsyncTask(context, new FinishAPI() {
-            @Override
-            public void onFinish(String result) {
-                JSONArray array = null;
-                try {
-                    array = new JSONArray(result);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                parseJsonArray(array);
-            }
-        }).execute();
+        TextView done = (TextView) findViewById(R.id.done);
+        if(done!=null){
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EditText userName = (EditText) findViewById(R.id.user_name);
+                    EditText repoName = (EditText) findViewById(R.id.repo_name);
 
+                    if(userName!=null && repoName!=null){
+                        hideKeyboard(context,userName);
+                        hideKeyboard(context,repoName);
+                        String userString = userName.getText().toString();
+                        String repoString = repoName.getText().toString();
+                        if(userString!=null && repoString!=null){
+                            new APIAsyncTask(context, new FinishAPI() {
+                                @Override
+                                public void onFinish(String result) {
+                                    JSONArray array = null;
+                                    try {
+                                        array = new JSONArray(result);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    parseJsonArray(array);
+                                }
+                            },userString,repoString).execute();
+                        }
+                    }
+                }
+            });
+        }
+
+
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        adaptor = new PullRequestAdaptor(items,context);
+        if(recyclerView!=null){
+            recyclerView.setAdapter(adaptor);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+            recyclerView.setLayoutManager(linearLayoutManager);
+        }
     }
 
     private void parseJsonArray(JSONArray array){
@@ -132,6 +167,17 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
         }
+
+        if(adaptor!=null){
+            adaptor.notifyDataSetChanged();
+        }
+    }
+
+    public static void hideKeyboard(Context context, View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null/* && inputMethodManager.isAcceptingText()*/) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     public class APIAsyncTask extends AsyncTask<Boolean, Void, Boolean> {
@@ -142,9 +188,11 @@ public class MainActivity extends AppCompatActivity{
         String owner = "Maxcodingworld";
         String repo = "AssignMeesho";
 
-        public APIAsyncTask(Context context,FinishAPI callback) {
+        public APIAsyncTask(Context context,FinishAPI callback,String owner,String repo) {
             mContext = context;
             this.callback = callback;
+            this.owner = owner;
+            this.repo = repo;
         }
 
         @Override
@@ -174,9 +222,13 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            Log.e(TAG,"Inside onPostExecute ::  " + result);
-            if(callback!=null){
-                callback.onFinish(result);
+            if(aBoolean) {
+                Log.e(TAG, "Inside onPostExecute ::  " + result);
+                if (callback != null) {
+                    callback.onFinish(result);
+                }
+            }else{
+                Toast.makeText(context,"File Not found",Toast.LENGTH_SHORT).show();
             }
         }
 
