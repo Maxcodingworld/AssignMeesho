@@ -57,7 +57,7 @@ public class PullRequestAdaptor extends RecyclerView.Adapter<PullRequestAdaptor.
 
             if(itemViewHolder.repoTitle!=null){
                 if(items.get(position)!=null && items.get(position).getRepoName()!=null && items.get(position).getTitle()!=null) {
-                    itemViewHolder.repoTitle.setText(items.get(position).getRepoName() + ":" +  items.get(position).getTitle());
+                    itemViewHolder.repoTitle.setText(items.get(position).getRepoName() + " :: " +  items.get(position).getTitle());
                 }else{
                     itemViewHolder.repoTitle.setText("--");
                 }
